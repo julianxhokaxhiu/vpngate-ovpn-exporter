@@ -23,7 +23,11 @@ SOFTWARE.
 '''
 
 import sys, os, csv, codecs, base64, getopt
-import urllib.request
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib import urlopen
 
 # Get Country as argument
 countryArgument = '*'
@@ -34,7 +38,7 @@ for o, a in opts:
 
 # Download the CSV file and prepare for parsing
 url = "http://www.vpngate.net/api/iphone/"
-ftpstream = urllib.request.urlopen(url)
+ftpstream = urlopen(url)
 csvfile = csv.reader(codecs.iterdecode(ftpstream, 'utf-8'))
 
 # Prepare variable placeholders for needed column indexes

@@ -92,7 +92,7 @@ for line in csvfile:
                 f = open( line[countryShortIndex] + '/' + line[hostNameIndex] + '.ovpn', 'wb')
                 f.write( base64.b64decode(line[openVPNConfigDataIndex]) )
                 f.close()
-        except Exception as e:
+        except:
             # If any error occours just ignore it
             pass
 

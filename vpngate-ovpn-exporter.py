@@ -22,11 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import sys, os, csv, codecs, base64, getopt
+import sys, os, csv, base64, getopt
 
-try:
+# Are we on Python 3?
+PY3 = sys.version_info > (3,)
+
+if PY3:
     from urllib.request import urlopen
-except ImportError:
+    import codecs
+else:
     from urllib import urlopen
 
 # Get Country as argument
@@ -38,8 +42,12 @@ for o, a in opts:
 
 # Download the CSV file and prepare for parsing
 url = "http://www.vpngate.net/api/iphone/"
-ftpstream = urlopen(url)
-csvfile = csv.reader(codecs.iterdecode(ftpstream, 'utf-8'))
+req = urlopen(url)
+csvfile = ''
+if PY3:
+    csvfile = csv.reader( codecs.iterdecode(req, 'utf-8') )
+else:
+    csvfile = csv.reader( req )
 
 # Prepare variable placeholders for needed column indexes
 hostNameIndex = -1
@@ -75,12 +83,16 @@ for line in csvfile:
             # If country code matches the one given as argument, or no one was given ( which means just get all )
             if line[countryShortIndex] == countryArgument or countryArgument == '*':
                 # Create folders based on country code...
-                os.makedirs( line[countryShortIndex], exist_ok=True )
+                try:
+                    os.makedirs( line[countryShortIndex] )
+                except:
+                    # Ignore if does already exist
+                    pass
                 # ...and save their respective OpenVPN configuration in a file ( binary mode needed )
                 f = open( line[countryShortIndex] + '/' + line[hostNameIndex] + '.ovpn', 'wb')
                 f.write( base64.b64decode(line[openVPNConfigDataIndex]) )
                 f.close()
-        except:
+        except Exception as e:
             # If any error occours just ignore it
             pass
 
